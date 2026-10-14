@@ -1,22 +1,26 @@
 # NBA Game Prediction Model
 
-**Status: in progress.** Data wrangling, exploratory analysis, and pre-game feature engineering are complete. Modeling is next.
+Predicting NBA game winners using only information available before tip-off. Home teams win 54.7% of games in this data, so that is the baseline the model has to beat (project goal: 60%+ accuracy).
 
-## Project overview
+**Status: in progress.** Data wrangling, exploratory analysis, and pre-game feature engineering are done. Modeling is next.
 
-This project is built around a business scenario: **BetEdge Analytics**, a sports analytics startup, wants to replace manual game analysis with a machine learning model that predicts NBA game outcomes. Its analysts currently pick winners with roughly 52% accuracy. The goal is a model that reaches **60%+ accuracy** using only data that is available before a game starts.
+## Key findings so far
 
-A useful reference point is the **home-team baseline**: in this data, home teams win 54.7% of games, so simply picking the home team every time is already right 54.7% of the time. The model has to beat that to add value.
+- **Home court advantage is real.** Home teams win 54.7% of games versus 45.3% for away teams. A permutation test (10,000 shuffles) gave p < 0.0001, so the gap is very unlikely to be chance.
+- **Most game stats can't be used to predict.** Plus-minus (r = 0.80 with the result) is just the final margin, and stats like points and field goal percentage are only known after the game ends. Using them would be data leakage, so they are excluded from the model.
+- **Pre-game features carry a modest signal.** Built from past games only, a team's season-to-date win percentage is the strongest (r = 0.27). Teams with the better record win more often, but the groups overlap heavily, which is expected for pre-game information.
 
-The full problem statement, success criteria, scope, and constraints are in `BetEdge Proposal.pdf`.
+## Background
+
+The project is framed as a business problem for a fictional sports analytics startup, **BetEdge Analytics**. Its analysts pick winners with roughly 52% accuracy, and the company wants a model that does better and can process new games automatically. The full problem statement, success criteria, and constraints are in `BetEdge Proposal.pdf`.
 
 ## Data
 
-- **Source:** the NBA Stats API, pulled with the `nba_api` Python package (`LeagueGameLog`)
+- **Source:** the NBA Stats API, pulled with the `nba_api` package
 - **Coverage:** three regular seasons (2023-24, 2024-25, 2025-26)
-- **Size:** 7,380 team-game records, with two rows per game (one for each team)
+- **Size:** 7,380 team-game records, two rows per game (one per team)
 
-## Repository structure
+## What's in this repo
 
 ```
 notebooks/
@@ -27,27 +31,32 @@ data/
 BetEdge Proposal.pdf                Problem statement and project scope
 ```
 
-## What has been done
+**Wrangling:** combined three seasons of game logs, created home/away and opponent columns from the matchup text, profiled the data, and handled one missing value.
 
-### 1. Data wrangling
-- Pulled three seasons of game logs from the NBA API and combined them.
-- Created a home/away flag and an opponent column from the `MATCHUP` text.
-- Profiled the data and checked quality. The data was already clean, with one missing free-throw percentage (a game with zero attempts), which was filled with 0.
-- Confirmed that the games with 290 minutes were double-overtime games, not errors.
-- Dropped an unused column and saved the cleaned file.
+**EDA:** compared every game stat with winning, found redundant features (for example REB and DREB, FTM and FTA), tested the home advantage, and identified leakage.
 
-### 2. Exploratory data analysis
-- **Home court advantage is real.** Home teams win 54.7% of games versus 45.3% for away teams. A permutation test (10,000 shuffles) gave p < 0.0001, so the difference is very unlikely to be chance.
-- **Same-game stats track winning.** Points (r = 0.50), field goal percentage (0.47), field goals made (0.43), defensive rebounds (0.38), and assists (0.33) are all positively related to winning. Free throws and shot attempts show little relationship.
-- **Redundant features.** REB and DREB, FTM and FTA, PTS and FGM, and made versus attempted shots overlap heavily, so only one of each is needed.
-- **Data leakage identified.** Plus-minus (r = 0.80 with the result) is just the final point margin, and every other same-game stat is also only known after the game ends. None of these can be used to predict a game.
+**Feature engineering:** for each team and its opponent, calculated season-to-date win percentage and 10-game rolling averages (points, FG%, 3P%, defensive rebounds, assists, turnovers), shifted by one game so a game never sees its own stats.
 
-### 3. Pre-game feature engineering
-To avoid leakage, features are built only from games played before the one being predicted, using lagged calculations (`shift(1)`):
+## Next steps
 
-- Season-to-date win percentage for each team
-- 10-game rolling averages for points, FG%, 3P%, defensive rebounds, assists, and turnovers
-- The same features for the **opponent**, merged onto each game
-- The difference between a team and its opponent in win percentage
+- Preprocess: keep only pre-game features and drop early-season rows with no history.
+- Split the data by date (train on earlier games, test on later ones).
+- Train and compare logistic regression and random forest against the 54.7% baseline, and report accuracy and feature importance.
 
-Prior win percentage is the strongest pre-game feature (r = 0.27). Teams with the better record win more often, but the groups overlap heavily, which is expected for pre-game information in a
+## Tools
+
+Python, pandas, NumPy, Matplotlib, Seaborn, nba_api, Jupyter (scikit-learn for modeling next)
+
+## Running the notebooks
+
+```bash
+pip install pandas numpy matplotlib seaborn nba-api jupyter
+jupyter lab
+```
+
+Run `Data Wrangling.ipynb` first. It saves the cleaned data, which `Exploratory Data Analysis.ipynb` loads from the `data/` folder.
+
+## Author
+
+Terrance Woolfork
+[GitHub](https://github.com/terrqnce) | [LinkedIn](https://linkedin.com/in/terrqnce)
