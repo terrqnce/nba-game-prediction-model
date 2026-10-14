@@ -23,12 +23,10 @@ The project is framed as a business problem for a fictional sports analytics sta
 ## What's in this repo
 
 ```
-notebooks/
-  Data Wrangling.ipynb              Pull, check, and clean the raw data
-  Exploratory Data Analysis.ipynb   Explore relationships, test home court, build features
-data/
-  nba_games_cleaned.csv             Cleaned dataset used by the EDA notebook
-BetEdge Proposal.pdf                Problem statement and project scope
+Notebooks/              Data Wrangling and Exploratory Data Analysis notebooks
+Data/                   Cleaned dataset used by the EDA notebook
+Profile Reports/        Automated data profiling reports from the wrangling step
+BetEdge Proposal.pdf    Problem statement and project scope
 ```
 
 **Wrangling:** combined three seasons of game logs, created home/away and opponent columns from the matchup text, profiled the data, and handled one missing value.
@@ -54,9 +52,10 @@ pip install pandas numpy matplotlib seaborn nba-api jupyter
 jupyter lab
 ```
 
-Run `Data Wrangling.ipynb` first. It saves the cleaned data, which `Exploratory Data Analysis.ipynb` loads from the `data/` folder.
+Run the Data Wrangling notebook first. It saves the cleaned data, which the Exploratory Data Analysis notebook loads from the `Data/` folder.
 
 ## Author
 
 Terrance Woolfork
+
 [GitHub](https://github.com/terrqnce) | [LinkedIn](https://linkedin.com/in/terrqnce)
